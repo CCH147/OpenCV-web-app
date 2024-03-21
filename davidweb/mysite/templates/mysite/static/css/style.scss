@@ -1,0 +1,42 @@
+table {
+    overflow:hidden;
+    th, td {
+      padding:.25em .5em;
+      text-align:left;
+      vertical-align:top;
+    }
+    th {
+      background-color:#009;
+      color:#fff;
+    }
+    td {
+      background-color:#eee;
+    }
+    tr,td,th {
+      transition:all 1s ease-in-out;
+      &.slide-out {
+        transform:rotateX(90deg);
+      }
+    }
+  }
+  tbody {
+    overflow:hidden;
+    th, td {
+      padding:.25em .5em;
+      text-align:left;
+      vertical-align:top;
+    }
+    th {
+      background-color:#009;
+      color:#fff;
+    }
+    td {
+      background-color:#eee;
+    }
+    tr,td,th {
+      transition:all 1s ease-in-out;
+      &.slide-out {
+        transform:rotateX(90deg);
+      }
+    }
+  }

@@ -1,0 +1,9 @@
+beautifulsoup4==4.11.1
+Django==4.2.7
+django-crispy-forms==2.0
+django-filter==23.2
+django-mathfilters==1.0.0
+pandas==1.4.4
+opencv-python==4.9.0.80
+opencv-contrib-python==4.9.0.80
+

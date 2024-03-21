@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<head>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script>
+        $(document).ready(function () {
+            var selfavg;
+            var totalself = 0;
+            $('td:nth-child(4)').each(function () {
+                selfavg = $(this).html();
+                totalself += parseFloat(selfavg);
+                $('#totalself').text(totalself.toFixed(2));
+            });
+
+        });
+
+    </script>
+    <script>
+        $(document).ready(function () {
+            var industryavg;
+            var totalin = 0;
+            $('td:nth-child(5)').each(function () {
+                industryavg = $(this).html();
+                totalin += parseFloat(industryavg);
+                $('#totalindustry').text(totalin.toFixed(2));
+            });
+
+        });
+
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<h4 class="text-left">
+    {% csrf_token %}
+    {% for date in enddate %}
+    資料更新截止日期：{{ date.year }} 年
+    {{ date.month }} 月
+    {% endfor %}
+</h4>
+<br />
+
+<body style="background-image: url('{% static 'page5.jpg' %}')">
+
+    <form method='POST'>
+        {% csrf_token %}
+        年份：{{ alldataFilter.form.year }}
+        &ensp;季節：{{ alldataFilter.form.season }}
+        &ensp;地區：{{ alldataFilter.form.area }}
+        &ensp;<input type="submit" class="btn btn-primary btn-lg" value="查詢" />&ensp;&ensp;&ensp;查詢完成後：
+        <a type="submit" class="btn btn-secondary btn-lg" href="#areasum">查看選項總和</a>
+    </form>
+    <br />
+    <table class="table table-bordered table-striped table-hover">
+        <thead class="table-light">
+            <th class="text-center">年份</th>
+            <th class="text-right">季節</th>
+            <th class="text-right">地區</th>
+            <th class="text-right">自家總用電(度)</th>
+            <th class="text-right">企業總用電(度)</th>
+        </thead>
+        <tbody>
+            {% for data in alldataFilter.qs %}
+            <tr>
+                <td align="center">{{ data.get_year_display }}</td>
+                <td align="right">{{ data.get_season_display }}</td>
+                <td align="right">{{ data.get_area_display }}</td>
+                <td align="right">{{ data.self_avg }}</td>
+                <td align="right">{{ data.industry_avg }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tr id="areasum">
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="1" align="center">自家用電量總和</td>
+            <td colspan="3" align="right" id='totalself'></td>
+        </tr>
+        <tr>
+            <td colspan="1" align="center">企業用電量總和</td>
+            <td colspan="4" align="right" id='totalindustry'></td>
+        </tr>
+
+    </table>
+    <div align="center" class="d-grid gap-2"><a style="font-family: 微軟正黑體; font-size:20px;"
+            class="btn btn-secondary btn-lg" href="">返 回 最 上 層 (選單) </a></div>
+    </div>
+    <br>
+    <br>
+    <br>
+    {% endblock %}

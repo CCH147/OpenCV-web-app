@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<body style="background-image: url('{% static 'page5.jpg' %}')">
+    <h4 class="text-left">
+        {% csrf_token %}
+        {% for date in enddate %}
+        資料更新截止日期：{{ date.year }} 年
+        {{ date.month }} 月
+        {% endfor %}
+    </h4>
+    <br />
+    
+    <h1 align="center" id="電力資訊分析">電力資訊分析</h1>
+    <br>
+    <h2 align="center" id="第一組">第一組</h2>
+    <br>
+    <p align="center">-張昌暉(電子系)</p>
+    <p align="center">-陳韋翔(電子系)</p>
+    <p align="center">-程竣豪(電子系)</p>
+    <p align="center">-陳盈臻(資管系)</p>
+    <p align="center">-龔　倢(資管系)</p>
+    {% endblock %}

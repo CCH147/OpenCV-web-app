@@ -1,0 +1,43 @@
+table {
+  overflow: hidden;
+}
+table th, table td {
+  padding: 0.25em 0.5em;
+  text-align: left;
+  vertical-align: top;
+}
+table th {
+  background-color: #009;
+  color: #fff;
+}
+table td {
+  background-color: #eee;
+}
+table tr, table td, table th {
+  transition: all 1s ease-in-out;
+}
+table tr.slide-out, table td.slide-out, table th.slide-out {
+  transform: rotateX(90deg);
+}
+
+tbody {
+  overflow: hidden;
+}
+tbody th, tbody td {
+  padding: 0.25em 0.5em;
+  text-align: left;
+  vertical-align: top;
+}
+tbody th {
+  background-color: #009;
+  color: #fff;
+}
+tbody td {
+  background-color: #eee;
+}
+tbody tr, tbody td, tbody th {
+  transition: all 1s ease-in-out;
+}
+tbody tr.slide-out, tbody td.slide-out, tbody th.slide-out {
+  transform: rotateX(90deg);
+}/*# sourceMappingURL=style.css.map */

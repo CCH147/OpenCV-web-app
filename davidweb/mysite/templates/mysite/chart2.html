@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>圖表</title>
+  <!-- 引入下载的 Charts 文件 -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+</head>
+
+<h4 class="text-left">
+  {% csrf_token %}
+  {% for date in enddate %}
+  資料更新截止日期：{{ date.year }} 年
+  {{ date.month }} 月
+  {% endfor %}
+</h4>
+<br />
+
+<body style="background-image: url('{% static 'page5.jpg' %}')">
+  <form method='POST' id="table">
+    {% csrf_token %}
+    年份：{{ alldataFilter.form.year }}
+    &ensp;季節：{{ alldataFilter.form.season }}
+    &ensp;<input type="submit" class="btn btn-primary btn-lg" value="查詢" />&ensp;&ensp;查詢完成後：
+    <a class="btn btn-secondary btn-lg" href="#chart">查看圖表</a>
+    <a class="btn btn-secondary btn-lg" href="#areasum">查看總和</a>
+  </form>
+  <br />
+  <table class="table table-bordered table-striped table-hover">
+    <thead class="table-light">
+      <th class="text-center">年份</th>
+      <th class="text-right">季節</th>
+      <th class="text-right">地區</th>
+      <th class="text-right">自家總用電(度)</th>
+      <th class="text-right">企業總用電(度)</th>
+    </thead>
+    <tbody>
+      {% for data in alldataFilter.qs %}
+      <tr>
+        <td align="center">{{ data.get_year_display }}</td>
+        <td align="right">{{ data.get_season_display }}</td>
+        <td align="right">{{ data.get_area_display }}</td>
+        <td align="right" class="self">{{ data.self_avg }}</td>
+        <td align="right" class="industry">{{ data.industry_avg }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+
+  </table>
+  <table class="table table-bordered table-striped table-hover" id="areasum">
+    <thead class="table-light">
+      <th></th>
+      <th colspan="3" class="text-right">自家總用電(度)</th>
+      <th colspan="4" class="text-right">企業總用電(度)</th>
+    </thead>
+    <tbody>
+      <tr>
+        <th class="text-center">北部</td>
+        <td colspan="3" align="right" id='Ntotalself'></td>
+        <td colspan="4" align="right" id='Ntotalindustry'></td>
+      </tr>
+      <tr>
+        <th class="text-center">中部</td>
+        <td colspan="3" align="right" id='Mtotalself'></td>
+        <td colspan="4" align="right" id='Mtotalindustry'></td>
+      </tr>
+      <tr>
+        <th class="text-center">南部</td>
+        <td colspan="3" align="right" id='Stotalself'></td>
+        <td colspan="4" align="right" id='Stotalindustry'></td>
+      </tr>
+      <tr>
+        <th class="text-center">東部</td>
+        <td colspan="3" align="right" id='Etotalself'></td>
+        <td colspan="4" align="right" id='Etotalindustry'></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <br />
+
+  <br>
+  <br>
+  <div id="chart" class="chartBox">
+    <canvas id="myChart" style="height: 1000px;"></canvas>
+    <br>
+    <div align="center" class="d-grid gap-2"><a style="font-family: 微軟正黑體; font-size:20px;"
+        class="btn btn-secondary btn-lg" href="">返 回 最 上 層 (選單) </a></div>
+  </div>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    .chartBox {
+      width: 1100px;
+      padding: 20px;
+      border-radius: 20px;
+      border: solid 3px rgba(54, 162, 235, 1);
+      background: white;
+      margin: 0 auto;
+    }
+  </style>
+
+  <script type="text/javascript">
+
+
+    Chart.defaults.font.size = 20;
+    // setup 
+    const data = {
+      labels: ['北部', '中部', '南部', '東部'],
+      datasets: [{
+        label: '自家用戶',
+        data: [18, 12, 6, 9],
+        backgroundColor:
+          'rgba(255, 26, 104, 0.5)',
+        borderColor:
+          'rgba(255, 26, 104, 1)',
+        borderWidth: 1
+      },
+      {
+        label: '企業用戶',
+        data: [18, 12, 6, 9],
+        backgroundColor:
+          'rgba(54, 162, 235, 0.5)',
+        borderColor:
+          'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }
+      ]
+    };
+
+    // config 
+    const config = {
+      type: 'bar',
+      data,
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function (value, index, values) {
+                return value + ' 億度';
+              }
+            },
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function (tooltipItem, data) {
+                var label = myChart.data.label;
+                var value = myChart.data.datasets[tooltipItem.datasetIndex].data[tooltipItem.dataIndex].toFixed(2)
+                return ': ' + value + ' 億度';
+              }
+            }
+          }
+        }
+      },
+    };
+
+    // render init block
+    const myChart = new Chart(
+      document.getElementById('myChart'),
+      config
+    );
+
+    //將各地區數據導入表格
+    var Northdata = 0, Middata = 0, Southdata = 0, Eastdata = 0, inNorthdata = 0, inMiddata = 0, inSouthdata = 0, inEastdata = 0;
+    var dataset = [];
+    var indataset = [];
+    const i = 100000000;
+    //將各地區數據導入表格
+    //將各地區數據導入表格
+    Ndata();
+    Mdata();
+    Sdata();
+    Edata();
+    inNdata();
+    inMdata();
+    inSdata();
+    inEdata();
+
+    function Ndata() {
+
+      console.log(myChart);
+      var selfavg;
+      var totalself = 0;
+      $('td:contains("北部")').next().each(function () {
+        selfavg = $(this).html();
+        totalself += parseFloat(selfavg);
+        $('#Ntotalself').text(totalself.toFixed(2));
+        Northdata = totalself / i;
+      });
+      console.log(Northdata);
+      console.log(dataset);
+      dataset.push(Northdata);
+      myChart.config.data.datasets[0].data = dataset;
+      myChart.update();
+    }
+
+    function inNdata() {
+      console.log(myChart);
+      var industryavg;
+      var totalin = 0;
+      $('td:contains("北部")').next().next().each(function () {
+        industryavg = $(this).html();
+        totalin += parseFloat(industryavg);
+        $('#Ntotalindustry').text(totalin.toFixed(2));
+        inNorthdata = totalin / i;
+      });
+      console.log(inNorthdata);
+      indataset.push(inNorthdata);
+      console.log(indataset);
+      myChart.config.data.datasets[1].data = indataset;
+      myChart.update();
+    }
+
+    function Mdata() {
+      var selfavg;
+      var totalself = 0;
+      $('td:contains("中部")').next().each(function () {
+        selfavg = $(this).html();
+        totalself += parseFloat(selfavg);
+        $('#Mtotalself').text(totalself.toFixed(2));
+        Middata = totalself / i;
+      });
+      console.log(Middata);
+      dataset.push(Middata);
+      console.log(dataset);
+      myChart.config.data.datasets[0].data = dataset;
+      myChart.update();
+    }
+
+    function inMdata() {
+      console.log(myChart);
+      var industryavg;
+      var totalin = 0;
+      $('td:contains("中部")').next().next().each(function () {
+        industryavg = $(this).html();
+        totalin += parseFloat(industryavg);
+        $('#Mtotalindustry').text(totalin.toFixed(2));
+        inMiddata = totalin / i;
+      });
+      console.log(inMiddata);
+      indataset.push(inMiddata);
+      console.log(indataset);
+      myChart.config.data.datasets[1].data = indataset;
+      myChart.update();
+    }
+
+    function Sdata() {
+      var selfavg;
+      var totalself = 0;
+      $('td:contains("南部")').next().each(function () {
+        selfavg = $(this).html();
+        totalself += parseFloat(selfavg);
+        $('#Stotalself').text(totalself.toFixed(2));
+        Southdata = totalself / i;
+      });
+      console.log(Southdata);
+      dataset.push(Southdata);
+      console.log(dataset);
+      myChart.config.data.datasets[0].data = dataset;
+      myChart.update();
+    }
+
+    function inSdata() {
+      console.log(myChart);
+      var industryavg;
+      var totalin = 0;
+      $('td:contains("南部")').next().next().each(function () {
+        industryavg = $(this).html();
+        totalin += parseFloat(industryavg);
+        $('#Stotalindustry').text(totalin.toFixed(2));
+        inSouthdata = totalin / i;
+      });
+      console.log(inSouthdata);
+      indataset.push(inSouthdata);
+      console.log(indataset);
+      myChart.config.data.datasets[1].data = indataset;
+      myChart.update();
+    }
+
+    function Edata() {
+      var selfavg;
+      var totalself = 0;
+      $('td:contains("東部")').next().each(function () {
+        selfavg = $(this).html();
+        totalself += parseFloat(selfavg);
+        $('#Etotalself').text(totalself.toFixed(2));
+        Eastdata = totalself / i;
+      });
+      console.log(Eastdata);
+      dataset.push(Eastdata);
+      console.log(dataset);
+      myChart.config.data.datasets[0].data = dataset;
+      myChart.update();
+    }
+
+    function inEdata() {
+      console.log(myChart);
+      var industryavg;
+      var totalin = 0;
+      $('td:contains("東部")').next().next().each(function () {
+        industryavg = $(this).html();
+        totalin += parseFloat(industryavg);
+        $('#Etotalindustry').text(totalin.toFixed(2));
+        inEastdata = totalin / i;
+      });
+      console.log(inEastdata);
+      indataset.push(inEastdata);
+      console.log(indataset);
+      myChart.config.data.datasets[1].data = indataset;
+      myChart.update();
+    }
+
+
+
+  </script>
+</body>
+
+</html>
+{% endblock %}
